@@ -58,8 +58,8 @@ void handle_packet(wifi_promiscuous_pkt_t *pkt, wifi_promiscuous_pkt_type_t type
 		break;
 	};
 
-	if (pktType == WIFI_PKT_CTRL || pktType == WIFI_PKT_MISC) return; // dont parse random pkts
-    if (pktType == WIFI_PKT_MGMT) { // management
+	if (pktType == 0x04) return; // dont parse random pkts
+    if (pktType == 0x00) { // management
         if      (pktSubtype == 0x40) {
 			currentPacketCounts::probec++;
 			runtimeStats::probec++;
@@ -105,7 +105,9 @@ void handle_packet(wifi_promiscuous_pkt_t *pkt, wifi_promiscuous_pkt_type_t type
     }
 
 	// process data frame
-	if (type != WIFI_PKT_DATA || pktlen < 28) return;
+	// Serial.println(pktType == 0x08 ? "Data" : pktType == 0x00 ? "Mgmt" : pktType == 0x04 ? "Ctrl" : "Misc");
+
+	if (pktType != 0x08 || pktlen < 28) return;
 
     if ((pkt->payload[30] == 0x88 && pkt->payload[31] == 0x8e) || (pkt->payload[32] == 0x88 && pkt->payload[33] == 0x8e)) { // eapol
 		currentPacketCounts::eapolc++;
@@ -121,7 +123,10 @@ void handle_packet(wifi_promiscuous_pkt_t *pkt, wifi_promiscuous_pkt_type_t type
 	currentPacketCounts::datac++;
 	runtimeStats::datac++;
 
-	if (!(macValid(macFrom) || macValid(macTo))) return;
+	if (!(macValid(macFrom) || macValid(macTo))) {
+		Serial.printf("Invalid MAC: %s -> %s\n", BSSID2NAME(macFrom, false), BSSID2NAME(macTo, false));
+		return;
+	};
 
 	// adding sta
 	for_each_aps {

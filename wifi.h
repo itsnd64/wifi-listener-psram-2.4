@@ -118,7 +118,7 @@ inline bool isBroadcast(const array<uint8_t, 6>mac) {
 }
 inline bool macValid(const array<uint8_t, 6>mac) {
 	const array<uint8_t, 6> zeroMac = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-	return (mac == zeroMac) && (mac == broadcastMac) && !(mac[0] & 0x01);
+	return !(mac == zeroMac && mac == broadcastMac && mac[0] & 0x01);
 }
 void sendDeauth(const uint8_t *bssid) {
 	uint8_t deauth_frame[26] = {0xc0, 0x00, 0x00, 0x00, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, MAC2STR(bssid), MAC2STR(bssid), 0x00, 0x00, 0x02, 0x00};
